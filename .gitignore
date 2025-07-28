@@ -1,0 +1,30 @@
+# .gitignore for /home/abe/docker-apps
+
+# Ignore environment variable files (often contain secrets)
+*.env
+*.env.*
+
+# Ignore Docker volumes or data directories if you ever store them here
+volumes/
+data/
+tmp/
+logs/
+
+# Ignore Python cache and virtual environments (if you use scripts)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore editor/project files
+.vscode/
+.idea/
+*.swp
+
