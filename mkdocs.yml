@@ -1,0 +1,10 @@
+site_name: Abe's Home Lab Docker Services
+nav:
+  - Home: index.md # This will be your main README.md
+  - Media Stack: media/README.md
+  - Network Utilities: network/README.md
+  - Gaming Servers: games/README.md
+  - Management Tools: management/README.md
+theme:
+  name: material
+# Other configurations like search, social icons, etc.

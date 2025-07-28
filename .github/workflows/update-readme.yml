@@ -1,0 +1,60 @@
+name: Generate AI Summaries and Update Docs
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+    paths:
+      - '**/docker-compose.yml' # Trigger if a docker-compose.yml changes
+      - '**/README.md'          # Trigger if any README.md changes
+      - 'scripts/generate_summary_readme.py' # Trigger if the script itself changes
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+jobs:
+  update-and-deploy-docs: # Changed job name to reflect full purpose
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # Default token has write access to current repo
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies for script
+        run: pip install -r scripts/requirements.txt
+
+      - name: Create .env file for AI API Key
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: Run AI Summary Script
+        run: python scripts/generate_summary_readme.py
+
+      # --- MkDocs Build Steps ---
+      - name: Install MkDocs and Material theme
+        run: pip install mkdocs mkdocs-material
+
+      - name: Build MkDocs site
+        run: mkdocs build # This will use the README.md updated by the script
+
+      # --- Commit README changes (if any) and then Deploy ---
+      - name: Commit and Push if README changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --cached --exit-code || git commit -m "Docs: Automated AI summary update [skip ci]" && git push
+      
+      - name: Deploy MkDocs to GitHub Pages
+        uses: peaceiris/actions-mkdocs-gh-pages@v1.2.9
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages # This is the branch where the static site will be pushed
+          publish_dir: site       # This is the directory MkDocs outputs to
